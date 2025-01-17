@@ -1,25 +1,66 @@
 'use client';
 
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { authService } from '@/app/services/auth';
+import { Formik, Form, Field, ErrorMessage } from 'formik';
+import * as Yup from 'yup';
+import type { SignUpData } from '../types/auth';
+
+const validationSchema = Yup.object({
+  username: Yup.string()
+    .min(3, 'Username must be at least 3 characters')
+    .required('Username is required'),
+  email: Yup.string()
+    .email('Email is invalid')
+    .required('Email is required'),
+  password: Yup.string()
+    .min(6, 'Password must be at least 6 characters')
+    .required('Password is required'),
+  confirmPassword: Yup.string()
+    .oneOf([Yup.ref('password'), ''], 'Passwords must match')
+    .required('Confirm Password is required'),
+});
+
+const initialValues: SignUpData = {
+  username: '',
+  email: '',
+  password: '',
+  confirmPassword: '',
+};
+
 interface SignUpProps {
-  onSignUp: (formData: {
-    username: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-  }) => void;
   onSwitchToSignIn: () => void;
+  onClose: () => void;
 }
 
-export default function SignUp({ onSignUp, onSwitchToSignIn }: SignUpProps) {
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-    onSignUp({
-      username: formData.get('username') as string,
-      email: formData.get('email') as string,
-      password: formData.get('password') as string,
-      confirmPassword: formData.get('confirmPassword') as string,
-    });
+export default function SignUp({ onSwitchToSignIn, onClose }: SignUpProps) {
+  const router = useRouter();
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (values: SignUpData) => {
+    try {
+      setError(null);
+      const res = await authService.register(values.username, values.email, values.password);
+
+      if (res?.error) {
+        console.error('Registration error:', res.error);
+        setError(res.error);
+        return;
+      }
+
+      if (res?.data?.user) {
+        localStorage.setItem('user', JSON.stringify(res.data.user));
+        onClose()
+        router.push('/quizzes');
+      } else {
+        console.error('No user data in response:', res);
+        setError('Registration failed: Invalid response from server');
+      }
+    } catch (error) {
+      console.error('Registration error:', error);
+      setError(error instanceof Error ? error.message : 'Something went wrong');
+    }
   };
 
   return (
@@ -38,70 +79,85 @@ export default function SignUp({ onSignUp, onSwitchToSignIn }: SignUpProps) {
           </button>
         </p>
       </div>
-      <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-        <div className="space-y-4">
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium text-slate-200">
-              Username
-            </label>
-            <input
-              id="username"
-              name="username"
-              type="text"
-              required
-              className="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Choose a username"
-            />
-          </div>
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-slate-200">
-              Email address
-            </label>
-            <input
-              id="email"
-              name="email"
-              type="email"
-              autoComplete="email"
-              required
-              className="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Enter your email"
-            />
-          </div>
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-slate-200">
-              Password
-            </label>
-            <input
-              id="password"
-              name="password"
-              type="password"
-              required
-              className="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Create a password"
-            />
-          </div>
-          <div>
-            <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-200">
-              Confirm Password
-            </label>
-            <input
-              id="confirmPassword"
-              name="confirmPassword"
-              type="password"
-              required
-              className="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-              placeholder="Confirm your password"
-            />
-          </div>
-        </div>
 
-        <button
-          type="submit"
-          className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-        >
-          Create Account
-        </button>
-      </form>
+      {error && (
+        <div className="mt-4 p-3 bg-red-500/10 border border-red-500/50 rounded text-red-500 text-sm">
+          {error}
+        </div>
+      )}
+
+      <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
+        {({ isSubmitting }) => (
+        <Form className="mt-8 space-y-6">
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-slate-200">
+                Username
+              </label>
+              <Field
+                id="username"
+                name="username"
+                type="text"
+                className="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Choose a username"
+              />
+              <ErrorMessage name="username" component="div" className="text-red-500 text-sm" />
+            </div>
+
+            <div>
+              <label htmlFor="email" className="block text-sm font-medium text-slate-200">
+                Email address
+              </label>
+              <Field
+                id="email"
+                name="email"
+                type="email"
+                autoComplete="email"
+                className="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Enter your email"
+              />
+              <ErrorMessage name="email" component="div" className="text-red-500 text-sm" />
+            </div>
+
+            <div>
+              <label htmlFor="password" className="block text-sm font-medium text-slate-200">
+                Password
+              </label>
+              <Field
+                id="password"
+                name="password"
+                type="password"
+                className="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Create a password"
+              />
+              <ErrorMessage name="password" component="div" className="text-red-500 text-sm" />
+            </div>
+
+            <div>
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-slate-200">
+                Confirm Password
+              </label>
+              <Field
+                id="confirmPassword"
+                name="confirmPassword"
+                type="password"
+                className="mt-1 block w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded-md text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                placeholder="Confirm your password"
+              />
+              <ErrorMessage name="confirmPassword" component="div" className="text-red-500 text-sm" />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            className="w-full py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-500 hover:bg-blue-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? 'Creating account...' : 'Create account'}
+          </button>
+        </Form>
+        )}
+      </Formik>
     </div>
   );
 }

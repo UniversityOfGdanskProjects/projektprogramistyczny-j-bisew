@@ -10,18 +10,11 @@ export default function Navbar() {
   const [showSignIn, setShowSignIn] = useState(false);
   const [showSignUp, setShowSignUp] = useState(false);
 
-  const handleSignIn = (email: string, password: string) => {
-    console.log('Sign in:', { email, password });
+  const handleSignIn = () => {
     setShowSignIn(false);
   };
 
-  const handleSignUp = (formData: {
-    username: string;
-    email: string;
-    password: string;
-    confirmPassword: string;
-  }) => {
-    console.log('Sign up:', formData);
+  const handleSignUp = () => {
     setShowSignUp(false);
   };
 
@@ -63,7 +56,7 @@ export default function Navbar() {
 
       <Modal isOpen={showSignIn} onClose={() => setShowSignIn(false)}>
         <SignIn
-          onSignIn={handleSignIn}
+          onClose={()=> setShowSignIn(false)}
           onSwitchToSignUp={() => {
             setShowSignIn(false);
             setShowSignUp(true);
@@ -73,7 +66,7 @@ export default function Navbar() {
 
       <Modal isOpen={showSignUp} onClose={() => setShowSignUp(false)}>
         <SignUp
-          onSignUp={handleSignUp}
+          onClose={()=> setShowSignIn(false)}
           onSwitchToSignIn={() => {
             setShowSignUp(false);
             setShowSignIn(true);
