@@ -6,7 +6,7 @@ import Navbar from './components/navbar';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'QuizMaster - Interactive Learning Platform',
+  title: 'QuizIt',
   description: 'Challenge yourself with interactive quizzes and learn something new every day',
 };
 
