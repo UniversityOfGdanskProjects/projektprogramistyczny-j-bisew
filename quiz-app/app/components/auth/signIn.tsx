@@ -1,11 +1,8 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import type { SignInData } from '../types/auth';
-import { authService } from '@/app/services/auth';
 
 const validationSchema = Yup.object({
   email: Yup.string()
@@ -22,34 +19,12 @@ const initialValues: SignInData = {
 };
 
 interface SignInProps {
+  onSignIn: (data: SignInData) => Promise<void>;
   onSwitchToSignUp: () => void;
-  onClose: () => void;
+  error?: string | null;
 }
 
-export default function SignIn({ onSwitchToSignUp, onClose }: SignInProps) {
-  const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async (values: SignInData) => {
-    try {
-      setError(null);
-      const res = await authService.login(values.email, values.password);
-
-      if (res.error) {
-        setError(res.error);
-        return;
-      }
-
-      if (res.data) {
-        localStorage.setItem('user', JSON.stringify(res.data));
-        onClose();
-        router.push('/quizzes');
-      }
-    } catch (error) {
-        setError(error instanceof Error ? error.message : 'Something went wrong');
-    }
-  }
-
+export default function SignIn({ onSignIn, onSwitchToSignUp, error }: SignInProps) {
   return (
     <div className="p-6">
       <div>
@@ -72,7 +47,7 @@ export default function SignIn({ onSwitchToSignUp, onClose }: SignInProps) {
       <Formik
         initialValues={initialValues}
         validationSchema={validationSchema}
-        onSubmit={handleSubmit}
+        onSubmit={onSignIn}
       >
         {({ isSubmitting }) => (
           <Form className="mt-8 space-y-6">

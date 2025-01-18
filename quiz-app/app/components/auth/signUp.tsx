@@ -1,11 +1,9 @@
 'use client';
 
-import { useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { authService } from '@/app/services/auth';
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import type { SignUpData } from '../types/auth';
+import { on } from 'events';
 
 const validationSchema = Yup.object({
   username: Yup.string()
@@ -30,39 +28,12 @@ const initialValues: SignUpData = {
 };
 
 interface SignUpProps {
+  onSignUp: (data: SignUpData) => void;
   onSwitchToSignIn: () => void;
-  onClose: () => void;
+  error?: string | null;
 }
 
-export default function SignUp({ onSwitchToSignIn, onClose }: SignUpProps) {
-  const router = useRouter();
-  const [error, setError] = useState<string | null>(null);
-
-  const handleSubmit = async (values: SignUpData) => {
-    try {
-      setError(null);
-      const res = await authService.register(values.username, values.email, values.password);
-
-      if (res?.error) {
-        console.error('Registration error:', res.error);
-        setError(res.error);
-        return;
-      }
-
-      if (res?.data?.user) {
-        localStorage.setItem('user', JSON.stringify(res.data.user));
-        onClose()
-        router.push('/quizzes');
-      } else {
-        console.error('No user data in response:', res);
-        setError('Registration failed: Invalid response from server');
-      }
-    } catch (error) {
-      console.error('Registration error:', error);
-      setError(error instanceof Error ? error.message : 'Something went wrong');
-    }
-  };
-
+export default function SignUp({ onSignUp, onSwitchToSignIn, error }: SignUpProps) {
   return (
     <div className="p-6">
       <div>
@@ -74,6 +45,7 @@ export default function SignUp({ onSwitchToSignIn, onClose }: SignUpProps) {
           <button
             onClick={onSwitchToSignIn}
             className="font-medium text-blue-500 hover:text-blue-400"
+            type='button'
           >
             Sign in
           </button>
@@ -86,7 +58,7 @@ export default function SignUp({ onSwitchToSignIn, onClose }: SignUpProps) {
         </div>
       )}
 
-      <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={handleSubmit}>
+      <Formik initialValues={initialValues} validationSchema={validationSchema} onSubmit={onSignUp}>
         {({ isSubmitting }) => (
         <Form className="mt-8 space-y-6">
           <div className="space-y-4">

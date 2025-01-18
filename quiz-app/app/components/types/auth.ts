@@ -14,7 +14,7 @@ export interface SignUpData {
     id: string;
     name: string;
     email: string;
-    role: 'USER' | 'MODERATOR' | 'ADMIN';
+    role: string;
   }
   
   export interface LoginResponse {

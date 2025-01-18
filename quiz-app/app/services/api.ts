@@ -1,13 +1,7 @@
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000/api';
 
-export async function fetchApi<T>(
-  endpoint: string,
-  options: RequestInit = {}
-): Promise<{ data?: T; error?: string }> {
+export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): Promise<{ data?: T; error?: string }> {
   try {
-    console.log('Making API request to:', `${API_BASE_URL}${endpoint}`);
-    console.log('With options:', options);
-
     const response = await fetch(`${API_BASE_URL}${endpoint}`, {
       ...options,
       headers: {
@@ -17,7 +11,6 @@ export async function fetchApi<T>(
     });
 
     const data = await response.json();
-    console.log('API response:', data);
 
     if (!response.ok) {
       throw new Error(data.error || 'An error occurred');
