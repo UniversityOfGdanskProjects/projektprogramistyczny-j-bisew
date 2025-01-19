@@ -3,7 +3,6 @@
 import { Formik, Form, Field, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
 import type { SignUpData } from '../types/auth';
-import { on } from 'events';
 
 const validationSchema = Yup.object({
   username: Yup.string()
