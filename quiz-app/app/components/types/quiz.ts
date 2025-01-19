@@ -1,22 +1,27 @@
-export type QuestionType = 'single' | 'multiple' | 'open';
+export type Difficulty = 'EASY' | 'MEDIUM' | 'HARD';
+export type QuestionType = 'SINGLE' | 'MULTIPLE' | 'OPEN';
 
 export interface Question {
   id: string;
+  question: string;
   type: QuestionType;
-  content: string;
-  options?: string[];
-  correctAnswers: string[];
+  answers: string[];
+  correctAnswer: string[];
+  quizId: string;
 }
 
 export interface Quiz {
   id: string;
   title: string;
   description: string;
-  questions: Question[];
-  authorId: string;
-  createdAt: Date;
-  updatedAt: Date;
   category: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  timeLimit?: number;
+  difficulty: Difficulty;
+  timeLimit: number | null;
+  questions: Question[];
+  createdBy: {
+    id: string;
+    name: string;
+  };
+  createdAt: string;
+  updatedAt: string;
 }
