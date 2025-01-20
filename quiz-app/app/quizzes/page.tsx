@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import SearchBar from '../components/searchBar';
 import { quizService } from '../services/quiz';
 import type { Quiz } from '../components/types/quiz';
+import { User, UserRole } from '../components/types/auth';
 
 export default function QuizzesPage() {
   const router = useRouter();
   const [quizzes, setQuizzes] = useState<Quiz[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [user, setUser] = useState<User | null>(null);
 
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
@@ -18,6 +20,13 @@ export default function QuizzesPage() {
 
   useEffect(() => {
     fetchQuizzes();
+  }, []);
+
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
   }, []);
 
   useEffect(() => {
@@ -66,6 +75,26 @@ export default function QuizzesPage() {
     }
   };
 
+  const handleDeleteQuiz = async (quizId: string) => {
+    if (!window.confirm('Are you sure you want to delete this quiz?')) {
+      return;
+    }
+  
+    try {
+      await quizService.deleteQuiz(quizId);
+      fetchQuizzes();
+    } catch (err) {
+      setError('Failed to delete quiz');
+    }
+  };
+
+  const canDeleteQuiz = (quiz: Quiz) => {
+    if (!user) return false;
+    if (user.role === UserRole.ADMIN) return true;
+    if (user.role === UserRole.MODERATOR) return true;
+    return false;
+  };
+
   const filteredQuizzes = quizzes.filter(quiz => {
     const matchesCategory = selectedCategory === 'all' || 
                           quiz.category.toLowerCase() === selectedCategory.toLowerCase();
@@ -77,6 +106,12 @@ export default function QuizzesPage() {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="mb-8">
+        <div className="mb-8">
+            <h1 className="text-3xl font-bold text-slate-100">Quizzes</h1>
+            <p className="text-slate-400 mt-2">
+              Browse through our collection of quizzes or search for specific ones
+            </p>
+          </div>
         <SearchBar
           placeholder="Search quizzes..."
           value={searchQuery}
@@ -133,21 +168,34 @@ export default function QuizzesPage() {
                 </div>
 
                 <div className="mt-6 flex justify-between items-center">
-                  <div className="text-sm text-slate-400">
-                    by {quiz.createdBy.name}
-                  </div>
+              <div className="text-sm text-slate-400">
+                by {quiz.createdBy.name}
+              </div>
+              <div className="flex gap-2">
+                {canDeleteQuiz(quiz) && (
                   <button 
-                    onClick={() => router.push(`/quiz/${quiz.id}`)}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteQuiz(quiz.id);
+                    }}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
                   >
-                    Start Quiz
+                    Delete
                   </button>
-                </div>
+                )}
+                <button 
+                  onClick={() => router.push(`/quizzes/${quiz.id}`)}
+                  className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
+                  Start Quiz
+                </button>
               </div>
             </div>
-          ))}
+          </div>
         </div>
-      )}
+      ))}
+    </div>
+  )}
 
       {!isLoading && !error && filteredQuizzes.length === 0 && (
         <div className="text-center py-12">
