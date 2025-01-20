@@ -37,7 +37,7 @@ export default function Home() {
             <FeatureCard
               icon={<Brain />}
               title="Multiple Quiz Types"
-              description="Choose from various quiz types including multiple choice, true/false, and open questions"
+              description="Choose from various quiz types including single or multiple choice and open questions"
             />
             <FeatureCard
               icon={<Search />}
