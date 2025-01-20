@@ -34,7 +34,7 @@ export default function Navbar() {
       }
       if (user.data) {
         localStorage.setItem('user', JSON.stringify(user.data));
-        setUser(user.data);
+        setUser(user.data as User);
         setShowSignIn(false);
         setAuthError(null);
         router.push('/quizzes');
@@ -83,9 +83,12 @@ export default function Navbar() {
               <Link href="/quizzes" className="text-slate-300 hover:text-slate-100 transition-colors">
                 Quizzes
               </Link>
-              <Link href="/leaderboard" className="text-slate-300 hover:text-slate-100 transition-colors">
-                Leaderboard
-              </Link>
+              
+              {user && (
+                <Link href="/create" className="text-slate-300 hover:text-slate-100 transition-colors">
+                  Create Quiz
+                </Link>
+              )}
             </div>
 
             <div className="flex items-center space-x-4">

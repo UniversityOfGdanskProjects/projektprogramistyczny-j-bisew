@@ -55,15 +55,6 @@ export default function UserMenu({ user, onLogout }: UserMenuProps) {
                         >
                             Profile
                         </button>
-                        <button
-                            onClick={() => {
-                                router.push('/my-quizzes');
-                                setIsOpen(false);
-                            }}
-                            className="w-full text-left px-4 py-2 text-sm text-slate-300 hover:bg-slate-700"
-                        >
-                            My Quizzes
-                        </button>
                     </div>
 
                     <div className="py-1">
