@@ -10,10 +10,14 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
       },
     });
 
+    if (response.status === 204 || response.headers.get('content-length') === '0') {
+      return { data: { success: true } as any };
+    }
+
     const data = await response.json();
 
     if (!response.ok) {
-      throw new Error(data.error || 'An error occurred');
+      return { error: data.message || 'An error occurred' };
     }
 
     return { data: data as T };
@@ -24,31 +28,3 @@ export async function fetchApi<T>(endpoint: string, options: RequestInit = {}): 
     };
   }
 }
-
-
-
-export const quizService = {
-    getQuizzes: () => fetchApi('/quizzes'),
-    
-    getQuiz: (id: string) => fetchApi(`/quizzes/${id}`),
-    
-    createQuiz: (data: any) => 
-      fetchApi('/quizzes', {
-        method: 'POST',
-        body: JSON.stringify(data),
-      }),
-      
-    updateQuiz: (id: string, data: any) =>
-      fetchApi(`/quizzes/${id}`, {
-        method: 'PATCH',
-        body: JSON.stringify(data),
-      }),
-      
-    deleteQuiz: (id: string) =>
-      fetchApi(`/quizzes/${id}`, {
-        method: 'DELETE',
-      }),
-      
-    searchQuizzes: (pattern: string) =>
-      fetchApi(`/quizzes/search?pattern=${pattern}`),
-};

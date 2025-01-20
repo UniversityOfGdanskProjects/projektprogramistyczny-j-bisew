@@ -10,21 +10,37 @@ export interface SignUpData {
     confirmPassword: string;
   }
   
-  export interface User {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-  }
-  
-  export interface LoginResponse {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-  }
-  
-  export interface RegisterResponse {
-    message: string;
-    user: User;
-  }
+export interface User {
+  id: string;
+  name: string;
+  email: string;
+  role: UserRole;
+}
+
+export enum UserRole {
+  USER = 'USER',
+  MODERATOR = 'MODERATOR',
+  ADMIN = 'ADMIN'
+}
+
+export interface LoginResponse {
+  id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
+export interface RegisterResponse {
+  message: string;
+  user: User;
+}
+
+export interface UserUpdateInput {
+  name?: string;
+  email?: string;
+  password?: string;
+}
+
+export interface RoleUpdateInput {
+  role: UserRole;
+}
