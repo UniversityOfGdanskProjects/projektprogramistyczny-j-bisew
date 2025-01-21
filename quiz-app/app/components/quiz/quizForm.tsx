@@ -3,12 +3,14 @@
 import React from 'react';
 import { Formik, Form, Field, FieldArray, ErrorMessage } from 'formik';
 import * as Yup from 'yup';
-import { Question, QuestionType } from '../types/quiz';
+import { QuestionType } from '../types/quiz';
+
+const categories = ['Programming', 'Science', 'History', 'Math', 'Languages', 'Geography', 'Other'];
 
 const validationSchema = Yup.object({
   title: Yup.string().required('Title is required'),
   description: Yup.string().required('Description is required'),
-  category: Yup.string().required('Category is required'),
+  category: Yup.string().oneOf(categories).required(`Category should be one of: ${categories.join(', ')}`),
   difficulty: Yup.string()
     .oneOf(['EASY', 'MEDIUM', 'HARD'])
     .required('Difficulty is required'),
@@ -36,7 +38,6 @@ const validationSchema = Yup.object({
           return schema
             .min(1, 'Select at least one correct answer');
         }
-        // OPEN type
         return schema
           .min(1, 'At least one correct answer is required');
       })
@@ -104,9 +105,17 @@ export default function QuizForm({ onSubmit, initialData, isEditing = false }: Q
                 <div>
                   <label className="block text-sm font-medium text-slate-200">Category</label>
                   <Field
-                    name="category"
-                    className="mt-1 w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-slate-200"
-                  />
+                  as="select"
+                  name="category"
+                  className="mt-1 w-full px-3 py-2 bg-slate-900 border border-slate-700 rounded text-slate-200"
+                  >
+                  <option value="">Select a category</option>
+                  {categories.map((category) => (
+                    <option key={category} value={category}>
+                    {category}
+                    </option>
+                  ))}
+                  </Field>
                   <ErrorMessage name="category" component="div" className="text-red-500 text-sm" />
                 </div>
 
@@ -190,7 +199,7 @@ export default function QuizForm({ onSubmit, initialData, isEditing = false }: Q
                                 {values.questions[index].type === 'SINGLE' ? (
                                   <input
                                     type="radio"
-                                    value={answerText || ''}  // Ensure empty string instead of null
+                                    value={answerText !== null ? answerText : ''}
                                     checked={
                                       Array.isArray(values.questions[index].correctAnswer) &&
                                       values.questions[index].correctAnswer[0] === answerText
@@ -198,7 +207,7 @@ export default function QuizForm({ onSubmit, initialData, isEditing = false }: Q
                                     onChange={() => {
                                       setFieldValue(
                                         `questions.${index}.correctAnswer`,
-                                        [answerText || '']  // Ensure empty string instead of null
+                                        [answerText || '']
                                       );
                                     }}
                                     className="form-radio"
@@ -206,7 +215,7 @@ export default function QuizForm({ onSubmit, initialData, isEditing = false }: Q
                                 ) : (
                                   <input
                                     type="checkbox"
-                                    value={answerText || ''}  // Ensure empty string instead of null
+                                    value={answerText || ''}
                                     checked={
                                       Array.isArray(values.questions[index].correctAnswer) &&
                                       values.questions[index].correctAnswer.includes(answerText)
@@ -219,7 +228,7 @@ export default function QuizForm({ onSubmit, initialData, isEditing = false }: Q
                                       if (e.target.checked) {
                                         setFieldValue(
                                           `questions.${index}.correctAnswer`,
-                                          [...currentCorrect, answerText || '']  // Ensure empty string instead of null
+                                          [...currentCorrect, answerText || '']
                                         );
                                       } else {
                                         setFieldValue(

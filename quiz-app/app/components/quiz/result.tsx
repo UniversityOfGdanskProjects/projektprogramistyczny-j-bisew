@@ -60,11 +60,9 @@ function QuizResult({ params: { id: quizId } }: { params: { id: string } }) {
           const parsedUser = JSON.parse(user);
           const percentage = (correctAnswers / questionResults.length) * 100;
           
-          // Get existing scores
           const savedScores = localStorage.getItem(`quiz_${quizId}_leaderboard`) || '[]';
           const scores = JSON.parse(savedScores);
           
-          // Add new score
           scores.push({
             userId: parsedUser.id,
             userName: parsedUser.name,
@@ -73,9 +71,7 @@ function QuizResult({ params: { id: quizId } }: { params: { id: string } }) {
             timestamp: Date.now()
           });
           
-          // Save updated scores
           localStorage.setItem(`quiz_${quizId}_leaderboard`, JSON.stringify(scores));
-          // Trigger storage event manually for same-window updates
           window.dispatchEvent(new Event('storage'));
         }      
       }

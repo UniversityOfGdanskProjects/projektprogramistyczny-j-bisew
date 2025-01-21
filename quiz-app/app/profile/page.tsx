@@ -200,7 +200,7 @@ export default function ProfilePage() {
 
                 <div>
                   <label htmlFor="password" className="block text-sm font-medium text-slate-200">
-                    New Password (leave blank to keep current)
+                    Password
                   </label>
                   <Field
                     id="password"

@@ -47,6 +47,9 @@ export default function SearchBar({
         <option value="history">History</option>
         <option value="math">Math</option>
         <option value="languages">Languages</option>
+        <option value="geography">Geography</option>
+        <option value="other">Other</option>
+
       </select>
 
       <select

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, use } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import SearchBar from '../components/searchBar';
 import { quizService } from '../services/quiz';
@@ -162,7 +162,7 @@ export default function QuizzesPage() {
                     <p className="text-slate-300">{quiz.questions.length}</p>
                   </div>
                   <div>
-                    <p className="text-slate-500">Time for one question</p>
+                    <p className="text-slate-500">Time limit</p>
                     <p className="text-slate-300">{quiz.timeLimit ? `${quiz.timeLimit} sec` : 'No time limit'}</p>
                   </div>
                 </div>
